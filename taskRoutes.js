@@ -45,3 +45,25 @@ router.delete('/tasks/:id', async (req, res) => {
 });
 
 module.exports = router;
+const auth = require('../middleware/authMiddleware');
+
+// Récupérer les tâches de l’utilisateur connecté
+router.get('/tasks', auth, async (req, res) => {
+  try {
+    const tasks = await Task.find({ user: req.user });
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ msg: "Erreur serveur" });
+  }
+});
+
+// Créer une tâche pour l’utilisateur connecté
+router.post('/tasks', auth, async (req, res) => {
+  try {
+    const newTask = new Task({ ...req.body, user: req.user });
+    await newTask.save();
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(400).json({ msg: "Erreur lors de la création de la tâche" });
+  }
+});
